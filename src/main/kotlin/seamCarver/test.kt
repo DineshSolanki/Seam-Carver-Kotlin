@@ -14,7 +14,7 @@ fun main() {
             //input(type = InputType.number).setAttributeRaw("id","inp").setAttribute("max", imageString) //any element after this are not rendered.
             //input(type = InputType.number).setAttributeRaw("id","inp") //elements will be rendered
             input(type = InputType.number).let {
-                it.setAttributeRaw("id","inp")
+                it.setAttributeRaw("id", "inp")
                 it.setAttribute("max", imageString)
             } //Elements will be rendered but KVar is somehow not binded
             button().let { button ->

@@ -5,10 +5,13 @@ import kweb.*
 import kweb.html.BodyElement
 import kweb.plugins.fomanticUI.fomantic
 import kweb.plugins.fomanticUI.fomanticUIPlugin
+import kweb.plugins.staticFiles.ResourceFolder
+import kweb.plugins.staticFiles.StaticFilesPlugin
 import kweb.state.KVar
 import seamCarver.*
 import java.awt.image.BufferedImage
 
+//region Variables
 var image: BufferedImage? = null
 var initialImage: BufferedImage? = null
 var imgElement: ImageElement? = null
@@ -22,7 +25,8 @@ var loader: DivElement? = null
 var loaderText = KVar("Preparing")
 var calledBySetImage = false
 var bodyElement: BodyElement? = null
-val counter = KVar(1)
+
+//endregion
 //var isSeamVisible =KVar("false")
 fun main(args: Array<String>) {
     val titleText = KVar("Seam Carver Kotlin")
@@ -30,31 +34,29 @@ fun main(args: Array<String>) {
 }
 
 private fun initPage(titleText: KVar<String>) {
-
-    Kweb(port = 16097, debug = true, plugins = listOf(fomanticUIPlugin))
+    var idOfFileInput = ""
+    Kweb(port = 16097, debug = true, plugins = listOf(fomanticUIPlugin, StaticFilesPlugin(ResourceFolder(""), "assets")))
     {
         doc.head.new {
             // Not required, but recommended by HTML spec
             meta(name = "Description", content = "Seam carver technology")
+            element("script", mapOf(
+                    "src" to "assets/JS.js"))
             title().text = titleText
         }
-        doc.head.new { element("script").text(showImage)
-        element("script").text(initProgress)}
-//        doc.head.new {
-//            element("script", mapOf(
-//                    "src" to  "resources/JS.js"))
-//        }
         bodyElement = doc.body
         bodyElement!!.new {
-            val fileInput = input(InputType.file)
-            fileInput.setAttributeRaw("onChange", "previewFile();")
-            fileInput.setAttributeRaw("hidden", true).setAttributeRaw("id", "openFile")
+            input(InputType.file).let {
+                it.setAttributeRaw("onChange", "previewFile(this);")
+                it.setAttributeRaw("hidden", true)
+                idOfFileInput= it.id!!
+            }
             div(fomantic.ui.placeholder.segment).new {
                 div(fomantic.ui.two.column.very.relaxed.grid).new {
                     div(fomantic.ui.column).new {
                         div(fomantic.ui.secondary.vertical.menu).new {
                             div(fomantic.item).new {
-                                label("openFile").new {
+                                label(idOfFileInput).new {
                                     div(fomantic.ui.primary.basic.button).text("Open")
                                 }
                             }
@@ -88,7 +90,8 @@ private fun initPage(titleText: KVar<String>) {
                                 }
                             }
                             div(fomantic.item).new {
-                                div(fomantic.ui.primary.basic.button).text("Reset Image").on.click {
+                                div(fomantic.ui.primary.basic.button).text("Reset Image")
+                                    .on.click {
                                     onResetClick()
                                 }
                             }
@@ -97,19 +100,12 @@ private fun initPage(titleText: KVar<String>) {
                     div(fomantic.ui.column).new {
                         div(fomantic.ui.large.image).new {
                             imgElement = img()
-                            val ir =counter.map { "$it.img" }
-                            imgElement!!.setAttributeRaw("id","imgfile")
-                            imgElement!!.setAttribute("src", ir)
-//                            imgElement!!.setAttribute("src", ir)
-//                                    .setAttributeRaw("id", "imageFile")
-//                                    .on.load {
-//                                        getImage()
-//                                    }
-                            button().let { button ->
-                                button.text("Increment")
-                                button.on.click {
-                                    counter.value++
-                                }}
+                            imgElement!!.on.load {
+                                getImage()
+                            }
+                            doc.head.new {
+                                element("script").text(showImage(imgElement!!.id!!))
+                            }
                         }
                     }
                 }
@@ -127,23 +123,25 @@ private fun initPage(titleText: KVar<String>) {
 
 fun getImage() {
     GlobalScope.launch {
-        //imageString.value = imgElement!!.read.attribute("src").await().toString()
+        imageString.value = imgElement!!.read.attribute("src").await().toString()
         image = decodeToImage(imageString.value)
         maxWidth.value = image!!.width
         maxHeight.value = image!!.height
         if (!calledBySetImage) {
             initialImage = image!!.deepCopy()
+            calledBySetImage = true
         }
-        calledBySetImage = false
     }
 
 }
 
 fun setImage(pic: BufferedImage, type: String) {
     calledBySetImage = true
-    imageString.value = encodeToString(pic, type)!!
-    //imgElement!!.execute("document.getElementById('imageFile').src='${imageString.value}'")
-
+    GlobalScope.launch {
+        imageString.value = encodeToString(pic, type)!!
+//    imgElement!!.execute("document.getElementById('imageFile').src='${imageString.value}'")
+        imgElement!!.setAttributeRaw("src", imageString.value)
+    }
 }
 
 fun onShowClick() {
@@ -151,7 +149,8 @@ fun onShowClick() {
 }
 
 private fun processSeamCarving(op: Operations, useLoader: Boolean) {
-    getImage()
+//    calledBySetImage=true
+//    getImage()
     if (image != null) {
         if (useLoader)
             loader!!.setClasses("ui active dimmer")
@@ -165,6 +164,8 @@ private fun processSeamCarving(op: Operations, useLoader: Boolean) {
                     loaderText.value = "Highlighted vertical seam ->${it + 1}"
                 }
                 else -> {
+                    seamCarver!!.highlightVerticalPixels(seam)
+                    setImage(seamCarver!!.image, "PNG")
                     seamCarver!!.removeVerticalSeam(seam)
                     loaderText.value = "Removed vertical seam ->${it + 1}"
                 }
@@ -181,9 +182,11 @@ private fun processSeamCarving(op: Operations, useLoader: Boolean) {
                     loaderText.value = "Highlighted horizontal seam ->${it + 1}"
                 }
                 else -> {
+                    seamCarver!!.highlightHorizontalPixels(seam)
+                    setImage(seamCarver!!.image, "PNG")
                     seamCarver!!.removeHorizontalSeam(seam)
                     loaderText.value = "Removed horizontal seam ->${it + 1}"
-                    setImage(seamCarver!!.image, "PNG")
+                    //setImage(seamCarver!!.image, "PNG")
                 }
             }
             setImage(seamCarver!!.image, "PNG")
@@ -200,8 +203,9 @@ fun onResetClick() {
 }
 
 fun onRemoveClick() {
-    processSeamCarving(Operations.RemoveSeams,false)
+    processSeamCarving(Operations.RemoveSeams, false)
 }
+
 /*fun getImage(fileInput: ImageElement) {
     GlobalScope.launch {
 //        val fileChooser = JFileChooser()

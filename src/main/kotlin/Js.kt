@@ -1,20 +1,19 @@
 import kweb.html.BodyElement
-import kweb.plugins.jqueryCore.executeOnSelf
 
-val showImage: String = """function previewFile() {
-  const preview = document.getElementById("imageFile");
-  const file = document.getElementById("openFile").files[0];
+fun showImage(idOfImg: String): String = """function previewFile(e) {
+  const preview = document.getElementById("$idOfImg");
+  const file = e.files[0];
   const reader = new FileReader();
-
   reader.addEventListener("load", function () {
     preview.src = reader.result;
   }, false);
 
   if (file) {
-    reader.readAsDataURL(file);
-  }
+    reader.readAsDataURL(file); 
+}
 }"""
-val initProgress = """${'$'}(document).ready(function() {
+
+const val initProgress = """${'$'}(document).ready(function() {
     ${'$'}.fn.initProgress = function() {
         alert('You have successfully defined the function!');
     }
