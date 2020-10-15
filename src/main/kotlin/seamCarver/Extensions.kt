@@ -68,7 +68,7 @@ fun encodeToString(image: BufferedImage?, type: String?): String? {
 fun decodeToImage(imageString: String?): BufferedImage? {
     var image: BufferedImage? = null
     val imageByte: ByteArray
-    val imagestr = imageString!!.drop(22)
+    val imagestr = imageString!!.split(",")[1]
     try {
         val decoder = Base64.getDecoder()
         imageByte = decoder.decode(imagestr)
