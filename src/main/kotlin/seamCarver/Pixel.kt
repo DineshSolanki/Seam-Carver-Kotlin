@@ -3,26 +3,13 @@ package seamCarver
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-class Pixel {
-    var x: Int
-    var y: Int
+class Pixel(X: Int, Y: Int, img: BufferedImage) {
+    var x: Int = X
+    var y: Int = Y
     var color: Color? = null
 
-    constructor(X: Int, Y: Int, img: BufferedImage) {
-        x = X
-        y = Y
+    init {
         updateColor(img)
-    }
-
-    constructor(X: Int, Y: Int, COLOR: Color) {
-        x = X
-        y = Y
-        color = COLOR
-    }
-
-    constructor(X: Int, Y: Int) {
-        x = X
-        y = Y
     }
 
     private fun updateColor(img: BufferedImage) {
@@ -30,3 +17,4 @@ class Pixel {
         color = Color(colorValue)
     }
 }
+

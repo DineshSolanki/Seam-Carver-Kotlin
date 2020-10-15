@@ -13,7 +13,7 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("com.github.kwebio:kweb-core:0.7.32")
+    implementation("com.github.kwebio:kweb-core:f1a9ae5f85")
     implementation("io.github.microutils:kotlin-logging:1.12.0")
     testImplementation(kotlin("test-junit"))
 }

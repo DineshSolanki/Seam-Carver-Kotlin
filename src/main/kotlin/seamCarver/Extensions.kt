@@ -1,10 +1,13 @@
 package seamCarver
 
+import kweb.Element
+import kweb.InputElement
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import javax.imageio.ImageIO
 
 fun MutableList<Double>.minIndex(): Int {

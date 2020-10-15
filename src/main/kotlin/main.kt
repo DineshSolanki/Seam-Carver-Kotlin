@@ -1,5 +1,4 @@
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kweb.*
 import kweb.html.BodyElement
@@ -46,11 +45,20 @@ private fun initPage(titleText: KVar<String>) {
         }
         bodyElement = doc.body
         bodyElement!!.new {
-            input(InputType.file).let {
-                it.setAttributeRaw("onChange", "previewFile(this);")
-                it.setAttributeRaw("hidden", true)
-                idOfFileInput= it.id!!
+            val input = fileInput()
+            input.onFileSelect {
+                input.retrieveFile {
+                    imageString.value = it.base64Content
+                }
             }
+            input.inputElement.setAttributeRaw("hidden",true)
+            input.setAccept(FileTypes.Image.toString())
+            idOfFileInput = input.inputElement.id!!
+//            input(InputType.file).let {
+//                it.setAttributeRaw("onChange", "previewFile(this);")
+//                it.setAttributeRaw("hidden", true)
+//                idOfFileInput= it.id!!
+//            }
             div(fomantic.ui.placeholder.segment).new {
                 div(fomantic.ui.two.column.very.relaxed.grid).new {
                     div(fomantic.ui.column).new {
@@ -100,6 +108,7 @@ private fun initPage(titleText: KVar<String>) {
                     div(fomantic.ui.column).new {
                         div(fomantic.ui.large.image).new {
                             imgElement = img()
+                            imgElement!!.setAttribute("src", imageString.map { it })
                             imgElement!!.on.load {
                                 getImage()
                             }
@@ -123,7 +132,6 @@ private fun initPage(titleText: KVar<String>) {
 
 fun getImage() {
     GlobalScope.launch {
-        imageString.value = imgElement!!.read.attribute("src").await().toString()
         image = decodeToImage(imageString.value)
         maxWidth.value = image!!.width
         maxHeight.value = image!!.height
@@ -139,8 +147,6 @@ fun setImage(pic: BufferedImage, type: String) {
     calledBySetImage = true
     GlobalScope.launch {
         imageString.value = encodeToString(pic, type)!!
-//    imgElement!!.execute("document.getElementById('imageFile').src='${imageString.value}'")
-        imgElement!!.setAttributeRaw("src", imageString.value)
     }
 }
 
@@ -157,7 +163,7 @@ private fun processSeamCarving(op: Operations, useLoader: Boolean) {
         seamCarver = SeamCarver(image!!)
         repeat(reduceWidth.value.toInt()) {
             val seam = seamCarver!!.findVerticalSeam()
-            println("Calculated vertical seam ->${it + 1}")
+            //println("Calculated vertical seam ->${it + 1}")
             when (op) {
                 Operations.HighlightSeams -> {
                     seamCarver!!.highlightVerticalPixels(seam)
@@ -175,7 +181,7 @@ private fun processSeamCarving(op: Operations, useLoader: Boolean) {
         repeat(reduceHeight.value.toInt()) {
             //updateImageFrame(jFrame, obj.image.getJLabel()!!)
             val seam = seamCarver!!.findHorizontalSeam()
-            println("Calculated horizontal seam ->${it + 1}")
+            //println("Calculated horizontal seam ->${it + 1}")
             when (op) {
                 Operations.HighlightSeams -> {
                     seamCarver!!.highlightHorizontalPixels(seam)

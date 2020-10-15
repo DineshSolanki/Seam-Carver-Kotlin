@@ -133,6 +133,7 @@ class SeamCarver(bufferedImage: BufferedImage) {
                 dpEnergy[x][y] = energyMap[x][y] + minimum
             }
         }
+        //minIndexOfColumnsOfRow = extension function to find index minimum column from the row
         val minIndex = dpEnergy.minIndexOfColumnsOfRow(height - 1)
         var yIndex = height - 1
         var xIndex = minIndex
