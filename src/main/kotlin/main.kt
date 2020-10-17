@@ -25,15 +25,13 @@ var loaderText = KVar("Preparing")
 var calledBySetImage = false
 var bodyElement: BodyElement? = null
 
-//endregion
-//var isSeamVisible =KVar("false")
-fun main(args: Array<String>) {
+fun main() {
     val titleText = KVar("Seam Carver Kotlin")
     initPage(titleText)
 }
 
 private fun initPage(titleText: KVar<String>) {
-    var idOfFileInput = ""
+    var idOfFileInput: String
     Kweb(port = 16097, debug = true, plugins = listOf(fomanticUIPlugin, StaticFilesPlugin(ResourceFolder(""), "assets")))
     {
         doc.head.new {
@@ -51,7 +49,7 @@ private fun initPage(titleText: KVar<String>) {
                     imageString.value = it.base64Content
                 }
             }
-            input.inputElement.setAttributeRaw("hidden",true)
+            input.inputElement.setAttributeRaw("hidden", true)
             input.setAccept(FileTypes.Image.toString())
             idOfFileInput = input.inputElement.id!!
 //            input(InputType.file).let {
@@ -99,9 +97,9 @@ private fun initPage(titleText: KVar<String>) {
                             }
                             div(fomantic.item).new {
                                 div(fomantic.ui.primary.basic.button).text("Reset Image")
-                                    .on.click {
-                                    onResetClick()
-                                }
+                                        .on.click {
+                                            onResetClick()
+                                        }
                             }
                         }
                     }
@@ -211,20 +209,3 @@ fun onResetClick() {
 fun onRemoveClick() {
     processSeamCarving(Operations.RemoveSeams, false)
 }
-
-/*fun getImage(fileInput: ImageElement) {
-    GlobalScope.launch {
-//        val fileChooser = JFileChooser()
-//        val jFrame =JFrame()
-//        val result = fileChooser.showOpenDialog(jFrame)
-
-        val r=fileInput.read.attribute("src").await().toString()
-        image=decodeToImage(r)
-        maxWidth.value = image!!.width
-        maxHeight.value = image!!.height
-        imageString.value = encodeToString(ImageIO.read(File("""C:\Users\Drona\IdeaProjects\Seam Carving\Seam Carving\task\test\blue-seam.png""")),"PNG")!!
-        fileInput.setAttributeRaw("src",imageString.value)
-        println(r)
-
-    }
-}*/
